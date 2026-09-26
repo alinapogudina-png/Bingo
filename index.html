@@ -184,6 +184,17 @@
             </div>
         </div>
 
+        <div class="flex-row">
+            <div class="form-group flex-col">
+                <label>Имя Игрока 1 / Команды 1</label>
+                <input type="text" id="teamName1" value="" placeholder="ИГРОК 1" oninput="debounceGenerate()">
+            </div>
+            <div class="form-group flex-col">
+                <label>Имя Игрока 2 / Команды 2</label>
+                <input type="text" id="teamName2" value="" placeholder="ИГРОК 2" oninput="debounceGenerate()">
+            </div>
+        </div>
+
         <h3>Оформление & Шрифты</h3>
         <div class="flex-row">
             <div class="form-group flex-col">
@@ -229,6 +240,13 @@
             <div class="form-group flex-col">
                 <label>Цвет Кнопки</label>
                 <input type="color" id="btnColor" value="#ffeb3b" onchange="debounceGenerate()">
+            </div>
+        </div>
+
+        <div class="flex-row">
+            <div class="form-group flex-col">
+                <label>Цвет Текста Победы</label>
+                <input type="color" id="winTextColor" value="#ffeb3b" onchange="debounceGenerate()">
             </div>
         </div>
 
@@ -488,12 +506,15 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
                 gameMode: document.getElementById('gameMode').value,
                 gridSize: document.getElementById('gridSize').value,
                 contentType: document.getElementById('contentType').value,
+                teamName1: document.getElementById('teamName1').value,
+                teamName2: document.getElementById('teamName2').value,
                 titleFont: document.getElementById('titleFont').value,
                 cardFont: document.getElementById('cardFont').value,
                 bgColor: document.getElementById('bgColor').value,
                 neonColor: document.getElementById('neonColor').value,
                 cardBgColor: document.getElementById('cardBgColor').value,
                 btnColor: document.getElementById('btnColor').value,
+                winTextColor: document.getElementById('winTextColor').value,
                 bgImg: document.getElementById('bgImg').value,
                 drawBtnText: document.getElementById('drawBtnText').value,
                 tokenImg1: document.getElementById('tokenImg1').value,
@@ -530,12 +551,15 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
                     if(data.gameMode !== undefined) document.getElementById('gameMode').value = data.gameMode;
                     if(data.gridSize !== undefined) document.getElementById('gridSize').value = data.gridSize;
                     if(data.contentType !== undefined) document.getElementById('contentType').value = data.contentType;
+                    if(data.teamName1 !== undefined) document.getElementById('teamName1').value = data.teamName1;
+                    if(data.teamName2 !== undefined) document.getElementById('teamName2').value = data.teamName2;
                     if(data.titleFont !== undefined) document.getElementById('titleFont').value = data.titleFont;
                     if(data.cardFont !== undefined) document.getElementById('cardFont').value = data.cardFont;
                     if(data.bgColor !== undefined) document.getElementById('bgColor').value = data.bgColor;
                     if(data.neonColor !== undefined) document.getElementById('neonColor').value = data.neonColor;
                     if(data.cardBgColor !== undefined) document.getElementById('cardBgColor').value = data.cardBgColor;
                     if(data.btnColor !== undefined) document.getElementById('btnColor').value = data.btnColor;
+                    if(data.winTextColor !== undefined) document.getElementById('winTextColor').value = data.winTextColor;
                     if(data.bgImg !== undefined) document.getElementById('bgImg').value = data.bgImg;
                     if(data.drawBtnText !== undefined) document.getElementById('drawBtnText').value = data.drawBtnText;
                     if(data.tokenImg1 !== undefined) document.getElementById('tokenImg1').value = data.tokenImg1;
@@ -618,12 +642,15 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
                 gameMode: document.getElementById('gameMode').value,
                 gridSize: parseInt(document.getElementById('gridSize').value) || 4,
                 contentType: document.getElementById('contentType').value,
+                teamName1: document.getElementById('teamName1').value.trim(),
+                teamName2: document.getElementById('teamName2').value.trim(),
                 titleFont: document.getElementById('titleFont').value,
                 cardFont: document.getElementById('cardFont').value,
                 bgColor: document.getElementById('bgColor').value,
                 neonColor: document.getElementById('neonColor').value,
                 cardBgColor: document.getElementById('cardBgColor').value,
                 btnColor: document.getElementById('btnColor').value,
+                winTextColor: document.getElementById('winTextColor').value,
                 bgImg: document.getElementById('bgImg').value.trim(),
                 drawBtnText: document.getElementById('drawBtnText').value,
                 tokenImg1: document.getElementById('tokenImg1').value.trim(),
@@ -695,8 +722,8 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    .card-column { display: flex; flex-direction: column; align-items: center; gap: 20px; transition: transform 0.3s, filter 0.3s; }\n' +
 '    \n' +
 '    .card-column.active-player { transform: scale(1.03); }\n' +
-'    .card-column.active-player .bingo-card { border-color: #ffeb3b !important; box-shadow: 0 0 35px #ffeb3b, 0 0 15px ' + conf.neonColor + ' !important; }\n' +
-'    .card-column.active-player .card-label { color: #ffeb3b !important; text-shadow: 0 0 12px #ffeb3b !important; font-size: 18px !important; }\n' +
+'    .card-column.active-player .bingo-card { border-color: ' + conf.neonColor + ' !important; box-shadow: 0 0 35px ' + conf.neonColor + ', 0 0 15px ' + conf.neonColor + ' !important; }\n' +
+'    .card-column.active-player .card-label { color: ' + conf.neonColor + ' !important; text-shadow: 0 0 12px ' + conf.neonColor + ' !important; font-size: 18px !important; }\n' +
 '    .card-column.inactive-player { opacity: 0.75; filter: grayscale(0.2); }\n' +
 '    \n' +
 '    .bingo-card { background: rgba(0, 0, 0, 0.7); border: 3px solid ' + conf.neonColor + '; border-radius: 22px; padding: 14px; box-shadow: 0 0 20px ' + conf.neonColor + '; display: flex; flex-direction: column; align-items: center; gap: 10px; backdrop-filter: blur(6px); transition: 0.3s; }\n' +
@@ -709,7 +736,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    .cell-large { width: clamp(75px, 12vw, 115px); height: clamp(75px, 12vw, 115px); }\n' +
 '    \n' +
 '    .cell:hover { border-color: ' + conf.neonColor + '; transform: scale(1.05); box-shadow: 0 0 15px ' + conf.neonColor + '; }\n' +
-'    .cell.has-token { border-color: #ffeb3b !important; box-shadow: 0 0 20px #ffeb3b, inset 0 0 10px #ffeb3b !important; background: rgba(255,235,59,0.15) !important; }\n' +
+'    .cell.has-token { border-color: ' + conf.neonColor + ' !important; box-shadow: 0 0 20px ' + conf.neonColor + ', inset 0 0 10px ' + conf.neonColor + ' !important; background: rgba(255,42,133,0.15) !important; }\n' +
 '    \n' +
 '    .cell.has-token .cell-img, .cell.has-token .cell-text { display: none !important; }\n' +
 '    \n' +
@@ -717,7 +744,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    .cell-text { color: #fff; font-size: clamp(11px, 1.9vw, 14px); font-weight: 800; pointer-events: none; word-break: break-word; line-height: 1.1; transition: opacity 0.2s; }\n' +
 '    \n' +
 '    .token-pile { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.65); padding: 10px 22px; border-radius: 30px; border: 2px solid ' + conf.neonColor + '; transition: 0.2s; box-shadow: 0 0 12px ' + conf.neonColor + '; margin-top: 5px; }\n' +
-'    .card-column.active-player .token-pile { border-color: #ffeb3b; box-shadow: 0 0 18px #ffeb3b; }\n' +
+'    .card-column.active-player .token-pile { border-color: ' + conf.neonColor + '; box-shadow: 0 0 18px ' + conf.neonColor + '; }\n' +
 '    .token-stack-img { width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }\n' +
 '    .token-pile-lbl { color: #fff; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }\n' +
 '    \n' +
@@ -728,7 +755,6 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    .modal-overlay.show { opacity: 1; pointer-events: auto; }\n' +
 '    .modal-card { background: ' + conf.cardBgColor + '; border: 3px solid ' + conf.neonColor + '; border-radius: 25px; padding: 28px 38px; width: 92%; max-width: 520px; box-shadow: 0 0 35px ' + conf.neonColor + '; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; position: relative; animation: popModal 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }\n' +
 '    @keyframes popModal { from { transform: scale(0.7); } to { transform: scale(1); } }\n' +
-'    .modal-title { color: #ffeb3b; font-family: ' + conf.titleFont + '; font-size: 24px; font-weight: 800; text-transform: uppercase; margin: 0; text-shadow: 0 0 10px #ffeb3b; }\n' +
 '    .modal-q { color: #ffffff; font-size: 19px; font-weight: 800; margin: 10px 0; text-shadow: 0 2px 4px #000; line-height: 1.3; }\n' +
 '    \n' +
 '    .options-grid { display: flex; flex-wrap: wrap; gap: 12px; width: 100%; justify-content: center; }\n' +
@@ -744,10 +770,16 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    .task-input { width: 100%; max-width: 320px; padding: 12px 16px; border-radius: 12px; border: 2px solid ' + conf.neonColor + '; background: rgba(0,0,0,0.6); color: #fff; font-size: 18px; text-align: center; font-weight: 800; outline: none; }\n' +
 '    .submit-btn { background: ' + conf.btnColor + '; color: #000; border: none; padding: 12px 32px; border-radius: 20px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 15px ' + conf.btnColor + '; transition: 0.2s; }\n' +
 '    .submit-btn:hover { transform: scale(1.08); background: #fff; }\n' +
+'    \n' +
+'    .fail-msg { color: ' + conf.neonColor + '; font-weight: 800; font-size: 15px; text-align: center; margin-top: 4px; text-shadow: 0 0 8px ' + conf.neonColor + '; }\n' +
+'    .fail-ok-btn { background: ' + conf.btnColor + '; color: #000; border: none; padding: 6px 20px; border-radius: 15px; font-weight: 900; font-size: 13px; cursor: pointer; margin-top: 6px; text-transform: uppercase; box-shadow: 0 0 10px ' + conf.btnColor + '; outline: none; }\n' +
+'    .fail-ok-btn:hover { background: #fff; transform: scale(1.05); }\n' +
 
-'    .win-img-side { max-width: 170px; max-height: 170px; object-fit: contain; animation: floatWin 3s ease-in-out infinite; filter: drop-shadow(0 5px 15px ' + conf.neonColor + '); }\n' +
-'    @keyframes floatWin { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }\n' +
-'    .win-text-side { font-family: ' + conf.titleFont + '; color: #ffeb3b; font-size: clamp(20px, 3.2vw, 32px); font-weight: 900; text-shadow: 0 0 15px #ffeb3b, 0 0 30px ' + conf.neonColor + '; text-align: center; text-transform: uppercase; margin: 8px 0; line-height: 1.2; }\n' +
+'    .win-card-side { background: rgba(20, 2, 10, 0.85); border: 3px solid ' + conf.neonColor + '; border-radius: 22px; padding: 20px 15px; box-shadow: 0 0 35px ' + conf.neonColor + '; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; backdrop-filter: blur(8px); }\n' +
+'    .win-img-side { max-width: 140px; max-height: 140px; object-fit: contain; animation: floatWin 3s ease-in-out infinite; filter: drop-shadow(0 5px 15px ' + conf.neonColor + '); }\n' +
+'    @keyframes floatWin { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }\n' +
+'    .win-text-side { font-family: ' + conf.titleFont + '; color: ' + conf.winTextColor + '; font-size: clamp(14px, 2vw, 20px); font-weight: 900; text-shadow: 0 0 10px ' + conf.winTextColor + '; text-align: center; text-transform: uppercase; margin: 2px 0; line-height: 1.2; }\n' +
+'    .win-name-side { font-family: ' + conf.titleFont + '; color: ' + conf.winTextColor + '; font-size: clamp(18px, 2.5vw, 26px); font-weight: 900; text-shadow: 0 0 15px ' + conf.winTextColor + ', 0 0 30px ' + conf.neonColor + '; text-align: center; text-transform: uppercase; margin: 2px 0; line-height: 1.2; }\n' +
 '    .restart-btn-side { background: ' + conf.btnColor + '; color: #000; border: 3px solid #fff; border-radius: 30px; padding: 12px 28px; font-family: ' + conf.titleFont + '; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px ' + conf.btnColor + '; text-transform: uppercase; outline: none; }\n' +
 '    .restart-btn-side:hover { transform: scale(1.08); background: #fff; color: ' + conf.neonColor + '; }\n' +
 '</style>\n' +
@@ -786,6 +818,8 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    const TOKEN_1 = "' + conf.tokenImg1 + '";\n' +
 '    const TOKEN_2 = "' + conf.tokenImg2 + '";\n' +
 '    const LANG = "' + conf.lang + '";\n' +
+'    const TEAM_1 = "' + conf.teamName1.replace(/"/g, '\\"') + '";\n' +
+'    const TEAM_2 = "' + conf.teamName2.replace(/"/g, '\\"') + '";\n' +
 '    const sndDrawUrl = "' + conf.sndDraw + '";\n' +
 '    const sndPlaceUrl = "' + conf.sndPlace + '";\n' +
 '    const sndWinUrl = "' + conf.sndWin + '";\n' +
@@ -809,17 +843,23 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '        }, 50);\n' +
 '    }\n' +
 '    const DICT = {\n' +
-'        RU: { p1: "ИГРОК 1", p2: "ИГРОК 2", comp: "КОМПЬЮТЕР", myTurn: "ВАШ ХОД", compTurn: "ХОД КОМПЬЮТЕРА", pile: "СТОПКА ФИШЕК", pass: "ПЕРЕДАТЬ ХОД ➔", drawPrompt: "Жмите кнопку!", taskTitle: "УЧЕБНОЕ ЗАДАНИЕ", check: "ПРОВЕРИТЬ", reply: "ОТВЕТИТЬ", done: "ГОТОВО / ВЕРНО", win1: "ПОБЕДИЛ ИГРОК 1!", win2: "ПОБЕДИЛ ИГРОК 2!", winComp: "ПОБЕДИЛ КОМПЬЮТЕР!", winUser: "ВЫ ПОБЕДИЛИ!", restart: "ИГРАТЬ СНОВА", failAlert: "Неверно! Фишка не ставится, ход потерян!" },\n' +
-'        EN: { p1: "PLAYER 1", p2: "PLAYER 2", comp: "COMPUTER", myTurn: "YOUR TURN", compTurn: "COMPUTER TURN", pile: "TOKEN PILE", pass: "PASS TURN ➔", drawPrompt: "Click button!", taskTitle: "LEARNING TASK", check: "CHECK", reply: "SUBMIT", done: "DONE / CORRECT", win1: "PLAYER 1 WINS!", win2: "PLAYER 2 WINS!", winComp: "COMPUTER WINS!", winUser: "YOU WIN!", restart: "PLAY AGAIN", failAlert: "Incorrect! Token not placed, turn lost!" },\n' +
-'        ES: { p1: "JUGADOR 1", p2: "JUGADOR 2", comp: "COMPUTADORA", myTurn: "TU TURNO", compTurn: "TURNO PC", pile: "PILA DE FICHAS", pass: "PASAR TURNO ➔", drawPrompt: "¡Presiona!", taskTitle: "TAREA", check: "COMPROBAR", reply: "ENVIAR", done: "¡CORRECTO!", win1: "¡JUGADOR 1 GANA!", win2: "¡JUGADOR 2 GANA!", winComp: "¡COMPUTADORA GANA!", winUser: "¡GANASTE!", restart: "JUGAR DE NUEVO", failAlert: "¡Incorrecto! ¡Turno perdido!" },\n' +
-'        FR: { p1: "JOUEUR 1", p2: "JOUEUR 2", comp: "ORDINATEUR", myTurn: "VOTRE TOUR", compTurn: "TOUR PC", pile: "PILE DE JETONS", pass: "PASSER ➔", drawPrompt: "Appuyez !", taskTitle: "TÂCHE", check: "VÉRIFIER", reply: "SOUMETTRE", done: "CORRECT", win1: "JOUEUR 1 GAGNE !", win2: "JOUEUR 2 GAGNE !", winComp: "ORDINATEUR GAGNE !", winUser: "TU AS GAGNÉ !", restart: "REJOUER", failAlert: "Incorrect ! Tour perdu !" },\n' +
-'        DE: { p1: "SPIELER 1", p2: "SPIELER 2", comp: "COMPUTER", myTurn: "DEIN ZUG", compTurn: "PC ZUG", pile: "MARKEN-STAPEL", pass: "ZUG PASSEN ➔", drawPrompt: "Drücken!", taskTitle: "AUFGABE", check: "PRÜFEN", reply: "SENDEN", done: "RICHTIG", win1: "SPIELER 1 GEWINNT!", win2: "SPIELER 2 GEWINNT!", winComp: "COMPUTER GEWINNT!", winUser: "DU GEWINNST!", restart: "NOCHMAL", failAlert: "Falsch! Zug verloren!" },\n' +
-'        IT: { p1: "GIOCATORE 1", p2: "GIOCATORE 2", comp: "COMPUTER", myTurn: "TUO TURNO", compTurn: "TURNO PC", pile: "PILA GETTONI", pass: "PASSA TURNO ➔", drawPrompt: "Premi!", taskTitle: "COMPITO", check: "VERIFICA", reply: "INVIA", done: "CORRETTO", win1: "VINCE GIOCATORE 1!", win2: "VINCE GIOCATORE 2!", winComp: "VINCE IL COMPUTER!", winUser: "HAI VINTO!", restart: "GIOCA ANCORA", failAlert: "Sbagliato! Turno perso!" },\n' +
-'        ZH: { p1: "玩家 1", p2: "玩家 2", comp: "电脑", myTurn: "你的回合", compTurn: "电脑回合", pile: "筹码堆", pass: "传递回合 ➔", drawPrompt: "点击抽卡！", taskTitle: "学习任务", check: "检查", reply: "提交", done: "正确", win1: "玩家 1 获胜！", win2: "玩家 2 获胜！", winComp: "电脑获胜！", winUser: "你赢了！", restart: "再玩一次", failAlert: "回答错误！筹码未放置，回合结束！" },\n' +
-'        JA: { p1: "プレイヤー 1", p2: "プレイヤー 2", comp: "コンピューター", myTurn: "あなたの番", compTurn: "PCの番", pile: "トークン置き場", pass: "ターンパス ➔", drawPrompt: "ボタンを押す！", taskTitle: "学習課題", check: "確認", reply: "送信", done: "正解", win1: "プレイヤー 1 の勝利！", win2: "プレイヤー 2 の勝利！", winComp: "コンピューターの勝利！", winUser: "あなたの勝ち！", restart: "もう一度プレイ", failAlert: "不正解！トークンは置けません！" },\n' +
-'        KO: { p1: "플레이어 1", p2: "플레이어 2", comp: "컴퓨터", myTurn: "내 차례", compTask: "컴퓨터 차례", pile: "토큰 더미", pass: "턴 넘기기 ➔", drawPrompt: "버튼 누르기!", taskTitle: "학습 과제", check: "확인", reply: "제출", done: "정답", win1: "플레이어 1 승리!", win2: "플레이어 2 승리!", winComp: "컴퓨터 승리!", winUser: "승리했습니다!", restart: "다시하기", failAlert: "오답입니다! 턴이 넘어갑니다!" }\n' +
+'        RU: { p1: TEAM_1 || "ИГРОК 1", p2: TEAM_2 || "ИГРОК 2", comp: "КОМПЬЮТЕР", myTurn: "ВАШ ХОД", compTurn: "ХОД КОМПЬЮТЕРА", pile: "СТОПКА ФИШЕК", pass: "ПЕРЕДАТЬ ХОД ➔", drawPrompt: "Жмите кнопку!", check: "ПРОВЕРИТЬ", reply: "ОТВЕТИТЬ", done: "ГОТОВО / ВЕРНО", win1: TEAM_1 ? "ПОБЕДИЛА КОМАНДА:| " + TEAM_1 : "ПОБЕДИЛ ИГРОК 1!", win2: TEAM_2 ? "ПОБЕДИЛА КОМАНДА:| " + TEAM_2 : "ПОБЕДИЛ ИГРОК 2!", winComp: "ПОБЕДИЛ КОМПЬЮТЕР!", winUser: "ВЫ ПОБЕДИЛИ!", restart: "ИГРАТЬ СНОВА", failAlert: "Неверно! Фишка не ставится, ход потерян!" },\n' +
+'        EN: { p1: TEAM_1 || "PLAYER 1", p2: TEAM_2 || "PLAYER 2", comp: "COMPUTER", myTurn: "YOUR TURN", compTurn: "COMPUTER TURN", pile: "TOKEN PILE", pass: "PASS TURN ➔", drawPrompt: "Click button!", check: "CHECK", reply: "SUBMIT", done: "DONE / CORRECT", win1: "PLAYER 1 WINS!", win2: "PLAYER 2 WINS!", winComp: "COMPUTER WINS!", winUser: "YOU WIN!", restart: "PLAY AGAIN", failAlert: "Incorrect! Token not placed, turn lost!" },\n' +
+'        ES: { p1: TEAM_1 || "JUGADOR 1", p2: TEAM_2 || "JUGADOR 2", comp: "COMPUTADORA", myTurn: "TU TURNO", compTurn: "TURNO PC", pile: "PILA DE FICHAS", pass: "PASAR TURNO ➔", drawPrompt: "¡Presiona!", check: "COMPROBAR", reply: "ENVIAR", done: "¡CORRECTO!", win1: "¡JUGADOR 1 GANA!", win2: "¡JUGADOR 2 GANA!", winComp: "¡COMPUTADORA GANA!", winUser: "¡GANASTE!", restart: "JUGAR DE NUEVO", failAlert: "¡Incorrecto! ¡Turno perdido!" },\n' +
+'        FR: { p1: TEAM_1 || "JOUEUR 1", p2: TEAM_2 || "JOUEUR 2", comp: "ORDINATEUR", myTurn: "VOTRE TOUR", compTurn: "TOUR PC", pile: "PILE DE JETONS", pass: "PASSER ➔", drawPrompt: "Appuyez !", check: "VÉRIFIER", reply: "SOUMETTRE", done: "CORRECT", win1: "JOUEUR 1 GAGNE !", win2: "JOUEUR 2 GAGNE !", winComp: "ORDINATEUR GAGNE !", winUser: "TU AS GAGNÉ !", restart: "REJOUER", failAlert: "Incorrect ! Tour perdu !" },\n' +
+'        DE: { p1: TEAM_1 || "SPIELER 1", p2: TEAM_2 || "SPIELER 2", comp: "COMPUTER", myTurn: "DEIN ZUG", compTurn: "PC ZUG", pile: "MARKEN-STAPEL", pass: "ZUG PASSEN ➔", drawPrompt: "Drücken!", check: "PRÜFEN", reply: "SENDEN", done: "RICHTIG", win1: "SPIELER 1 GEWINNT!", win2: "SPIELER 2 GEWINNT!", winComp: "COMPUTER GEWINNT!", winUser: "DU GEWINNST!", restart: "NOCHMAL", failAlert: "Falsch! Zug verloren!" },\n' +
+'        IT: { p1: TEAM_1 || "GIOCATORE 1", p2: TEAM_2 || "GIOCATORE 2", comp: "COMPUTER", myTurn: "TUO TURNO", compTurn: "TURNO PC", pile: "PILA GETTONI", pass: "PASSA TURNO ➔", drawPrompt: "Premi!", check: "VERIFICA", reply: "INVIA", done: "CORRETTO", win1: "VINCE GIOCATORE 1!", win2: "VINCE GIOCATORE 2!", winComp: "VINCE IL COMPUTER!", winUser: "HAI VINTO!", restart: "GIOCA ANCORA", failAlert: "Sbagliato! Turno perso!" },\n' +
+'        ZH: { p1: TEAM_1 || "玩家 1", p2: TEAM_2 || "玩家 2", comp: "电脑", myTurn: "你的回合", compTurn: "电脑回合", pile: "筹码堆", pass: "传递回合 ➔", drawPrompt: "点击抽卡！", check: "检查", reply: "提交", done: "正确", win1: "玩家 1 获胜！", win2: "玩家 2 获胜！", winComp: "电脑获胜！", winUser: "你赢了！", restart: "再玩一次", failAlert: "回答错误！筹码未放置，回合结束！" },\n' +
+'        JA: { p1: TEAM_1 || "プレイヤー 1", p2: TEAM_2 || "プレイヤー 2", comp: "コンピューター", myTurn: "あなたの番", compTurn: "PCの番", pile: "トークン置き場", pass: "ターンパス ➔", drawPrompt: "ボタンを押す！", check: "確認", reply: "送信", done: "正解", win1: "プレイヤー 1 の勝利！", win2: "プレイヤー 2 の勝利！", winComp: "コンピューターの勝利！", winUser: "あなたの勝ち！", restart: "もう一度プレイ", failAlert: "不正解！トークンは置けません！" },\n' +
+'        KO: { p1: TEAM_1 || "플레이어 1", p2: TEAM_2 || "플레이어 2", comp: "컴퓨터", myTurn: "내 차례", compTask: "컴퓨터 차례", pile: "토큰 더미", pass: "턴 넘기기 ➔", drawPrompt: "버튼 누르기!", check: "확인", reply: "제출", done: "정답", win1: "플레이어 1 승리!", win2: "플레이어 2 승리!", winComp: "컴퓨터 승리!", winUser: "승리했습니다!", restart: "다시하기", failAlert: "오답입니다! 턴이 넘어갑니다!" }\n' +
 '    };\n' +
 '    const L = DICT[LANG] || DICT["RU"];\n' +
+'    if(TEAM_1) L.p1 = TEAM_1;\n' +
+'    if(TEAM_2) L.p2 = TEAM_2;\n' +
+'    if(TEAM_1 && MODE === "2p") L.win1 = "ПОБЕДИЛА КОМАНДА:| " + TEAM_1 + "!";\n' +
+'    else if(TEAM_1) L.win1 = "ПОБЕДИЛ:| " + TEAM_1 + "!";\n' +
+'    if(TEAM_2 && MODE === "2p") L.win2 = "ПОБЕДИЛА КОМАНДА:| " + TEAM_2 + "!";\n' +
+'    else if(TEAM_2) L.win2 = "ПОБЕДИЛ:| " + TEAM_2 + "!";\n' +
 '    let currentDrawnItem = null;\n' +
 '    let drawnHistory = [];\n' +
 '    let currentPlayer = 1;\n' +
@@ -1053,10 +1093,6 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    }\n' +
 '    function openTaskModal(task) {\n' +
 '        modalCardContent.innerHTML = "";\n' +
-'        const title = document.createElement("div");\n' +
-'        title.className = "modal-title";\n' +
-'        title.innerText = L.taskTitle;\n' +
-'        modalCardContent.appendChild(title);\n' +
 '        const qText = document.createElement("div");\n' +
 '        qText.className = "modal-q";\n' +
 '        qText.innerText = task.q;\n' +
@@ -1173,10 +1209,22 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '        passTurn();\n' +
 '    }\n' +
 '    function handleTaskFail() {\n' +
-'        taskModal.classList.remove("show");\n' +
-'        activePendingCell = null;\n' +
-'        alert(L.failAlert);\n' +
-'        passTurn();\n' +
+'        const existingMsg = modalCardContent.querySelector(".fail-msg");\n' +
+'        if(existingMsg) return;\n' +
+'        const failMsg = document.createElement("div");\n' +
+'        failMsg.className = "fail-msg";\n' +
+'        failMsg.innerText = L.failAlert;\n' +
+'        modalCardContent.appendChild(failMsg);\n' +
+'        const okBtn = document.createElement("button");\n' +
+'        okBtn.className = "fail-ok-btn";\n' +
+'        okBtn.innerText = "OK";\n' +
+'        okBtn.onclick = () => {\n' +
+'            taskModal.classList.remove("show");\n' +
+'            activePendingCell = null;\n' +
+'            passTurn();\n' +
+'        };\n' +
+'        modalCardContent.appendChild(okBtn);\n' +
+'        triggerTypeset();\n' +
 '    }\n' +
 '    function compTurn() {\n' +
 '        if(isGameOver || currentPlayer !== 2) return;\n' +
@@ -1221,15 +1269,23 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    function triggerWin(playerNum) {\n' +
 '        isGameOver = true;\n' +
 '        playSfx(sfxWin);\n' +
-'        let winMsg = "";\n' +
-'        if(MODE === "1p") winMsg = winTextConfig;\n' +
-'        else if(MODE === "2p") winMsg = playerNum === 1 ? L.win1 : L.win2;\n' +
-'        else if(MODE === "comp") winMsg = playerNum === 1 ? L.winUser : L.winComp;\n' +
+'        let winRaw = "";\n' +
+'        if(MODE === "1p") winRaw = winTextConfig;\n' +
+'        else if(MODE === "2p") winRaw = playerNum === 1 ? L.win1 : L.win2;\n' +
+'        else if(MODE === "comp") winRaw = playerNum === 1 ? L.winUser : L.winComp;\n' +
+'        \n' +
+'        let parts = winRaw.split("|");\n' +
+'        let smallText = parts[0] || "";\n' +
+'        let largeName = parts[1] || "";\n' +
+'        \n' +
 '        const winImgHtml = winImgUrl !== "" ? \'<img src="\' + winImgUrl + \'" class="win-img-side">\' : \'\';\n' +
 '        drawSectionSide.innerHTML = \n' +
-'            winImgHtml +\n' +
-'            \'<div class="win-text-side">\' + winMsg + \'</div>\' +\n' +
-'            \'<button class="restart-btn-side" id="win-restart-btn">\' + L.restart + \'</button>\';\n' +
+'            \'<div class="win-card-side">\' +\n' +
+'                winImgHtml +\n' +
+'                \'<div class="win-text-side">\' + smallText + \'</div>\' +\n' +
+'                (largeName ? \'<div class="win-name-side">\' + largeName + \'</div>\' : \'\') +\n' +
+'                \'<button class="restart-btn-side" id="win-restart-btn">\' + L.restart + \'</button>\' +\n' +
+'            \'</div>\';\n' +
 '        document.getElementById("win-restart-btn").onclick = initGame;\n' +
 '    }\n' +
 '    cornerRestartBtn.onclick = initGame;\n' +
