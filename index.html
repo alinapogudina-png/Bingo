@@ -193,6 +193,12 @@
                 <label>Имя Игрока 2 / Команды 2</label>
                 <input type="text" id="teamName2" value="" placeholder="ИГРОК 2" oninput="debounceGenerate()">
             </div>
+            <div class="form-group flex-col" style="display: flex; align-items: center; justify-content: center; padding-top: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; font-weight: 800; font-size: 13px; color: #ffeb3b;">
+                    <input type="checkbox" id="randomizeTasks" checked onchange="debounceGenerate()" style="width: 18px; height: 18px; accent-color: #ff477e;">
+                    Рандомный порядок вопросов
+                </label>
+            </div>
         </div>
 
         <h3>Оформление & Шрифты</h3>
@@ -287,7 +293,7 @@
         <div class="hint">Заполняют карточки игроков. Формат: <code>Ссылка_или_загрузка | Название</code></div>
         <div class="form-group" style="margin-top: 8px;">
             <div class="input-with-button" style="margin-bottom: 8px;">
-                <button class="upload-btn" style="width: 100%; padding: 8px;" onclick="document.getElementById('file-items-batch').click()">➕ Загрузить несколько картинок сразу</button>
+                <button class="upload-btn" style="width: 100%; padding: 8px;" onclick="document.getElementById('file-items-batch').click()">➕ Загрузить несколько картинок сразу с компьютера</button>
             </div>
             <input type="file" id="file-items-batch" accept="image/*" multiple style="display:none;" onchange="handleBatchItems(event)">
 
@@ -412,7 +418,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
             <ul>
                 <li><b>Один игрок (1P):</b> Ученик играет со своей карточкой. Нажимает кнопку барабана, ищет совпадение на поле, отвечает на учебное задание и стремится собрать Бинго (линию) за минимальное число ходов.</li>
                 <li><b>Два игрока / 2 команды (2P):</b> Игроки ходят строго по очереди. При клике на правильную клетку открывается учебное задание. При верном ответе ставится фишка, при ошибке — фишка не ставится и ход переходит к сопернику.</li>
-                <li><b>Против компьютера (Comp):</b> Вы играете Игроком 1 против ИИ (Игрок 2). После вашего хода компьютер автоматически делает свой ход, если находит совпадение.</li>
+                <li><b>Против компьютера (Comp):</b> Вы играете Игроком 1 против ИИ (Игрок 1 — вы, Игрок 2 — компьютер). После вашего хода компьютер автоматически делает свой ход, если находит совпадение.</li>
             </ul>
 
             <h4>📐 Поддержка математических формул (LaTeX):</h4>
@@ -472,19 +478,33 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
             const files = event.target.files;
             if(!files || files.length === 0) return;
             const textarea = document.getElementById('itemsList');
-            let processed = 0;
+            let promises = [];
+
             for(let i=0; i<files.length; i++) {
-                fileToBase64(files[i], (base64) => {
-                    const nameWithoutExt = files[i].name.replace(/\.[^/.]+$/, "");
-                    const currentText = textarea.value.trim();
-                    textarea.value = (currentText ? currentText + '\n' : '') + base64 + ' | ' + nameWithoutExt;
-                    processed++;
-                    if(processed === files.length) {
-                        debounceGenerate();
+                const file = files[i];
+                const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+                promises.push(new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve({ base64: e.target.result, name: nameWithoutExt });
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(file);
+                }));
+            }
+
+            Promise.all(promises).then(results => {
+                let currentText = textarea.value.trim();
+                let newLines = [];
+                results.forEach(res => {
+                    if(res && res.base64) {
+                        newLines.push(res.base64 + ' | ' + res.name);
                     }
                 });
-            }
-            event.target.value = '';
+                if(newLines.length > 0) {
+                    textarea.value = (currentText ? currentText + '\n' : '') + newLines.join('\n');
+                    debounceGenerate();
+                }
+                event.target.value = '';
+            });
         }
 
         function openFullPreview() {
@@ -508,6 +528,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
                 contentType: document.getElementById('contentType').value,
                 teamName1: document.getElementById('teamName1').value,
                 teamName2: document.getElementById('teamName2').value,
+                randomizeTasks: document.getElementById('randomizeTasks').checked,
                 titleFont: document.getElementById('titleFont').value,
                 cardFont: document.getElementById('cardFont').value,
                 bgColor: document.getElementById('bgColor').value,
@@ -553,6 +574,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
                     if(data.contentType !== undefined) document.getElementById('contentType').value = data.contentType;
                     if(data.teamName1 !== undefined) document.getElementById('teamName1').value = data.teamName1;
                     if(data.teamName2 !== undefined) document.getElementById('teamName2').value = data.teamName2;
+                    if(data.randomizeTasks !== undefined) document.getElementById('randomizeTasks').checked = data.randomizeTasks;
                     if(data.titleFont !== undefined) document.getElementById('titleFont').value = data.titleFont;
                     if(data.cardFont !== undefined) document.getElementById('cardFont').value = data.cardFont;
                     if(data.bgColor !== undefined) document.getElementById('bgColor').value = data.bgColor;
@@ -644,6 +666,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
                 contentType: document.getElementById('contentType').value,
                 teamName1: document.getElementById('teamName1').value.trim(),
                 teamName2: document.getElementById('teamName2').value.trim(),
+                randomizeTasks: document.getElementById('randomizeTasks').checked,
                 titleFont: document.getElementById('titleFont').value,
                 cardFont: document.getElementById('cardFont').value,
                 bgColor: document.getElementById('bgColor').value,
@@ -704,7 +727,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    .draw-card-box { width: 190px; height: 190px; background: ' + conf.cardBgColor + '; border: 3px solid ' + conf.neonColor + '; border-radius: 20px; box-shadow: 0 0 25px ' + conf.neonColor + ', inset 0 0 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }\n' +
 '    .draw-card-box.anim-draw { transform: scale(1.15) rotate(5deg); }\n' +
 '    \n' +
-'    .draw-img { width: 115px; height: 115px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }\n' +
+'    .draw-img { width: 130px; height: 130px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }\n' +
 '    .draw-text { color: #ffffff; font-size: 16px; font-weight: 800; margin-top: 8px; text-shadow: 0 2px 4px #000; word-break: break-word; }\n' +
 '    \n' +
 '    .draw-btn { background: ' + conf.btnColor + '; color: #000; border: 3px solid #fff; border-radius: 30px; padding: 12px 24px; font-family: ' + conf.titleFont + '; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 0 20px ' + conf.btnColor + ', 0 5px 15px rgba(0,0,0,0.4); text-transform: uppercase; outline: none; }\n' +
@@ -759,17 +782,21 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    \n' +
 '    .options-grid { display: flex; flex-wrap: wrap; gap: 12px; width: 100%; justify-content: center; }\n' +
 '    .opt-btn { background: rgba(255,255,255,0.1); color: #fff; border: 2px solid ' + conf.neonColor + '; padding: 12px 22px; border-radius: 14px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s; flex: 1; min-width: 140px; text-align: center; outline: none; }\n' +
-'    .opt-btn:hover { background: ' + conf.neonColor + '; color: #000; transform: scale(1.05); }\n' +
+'    .opt-btn:hover:not(:disabled) { background: ' + conf.neonColor + '; color: #000; transform: scale(1.05); }\n' +
 '    .opt-btn.selected { background: #ffeb3b; color: #000; border-color: #fff; box-shadow: 0 0 15px #ffeb3b; }\n' +
+'    .opt-btn:disabled { opacity: 0.5; cursor: not-allowed; }\n' +
 '    \n' +
 '    .match-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }\n' +
 '    .match-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 12px; border: 1px solid ' + conf.neonColor + '; }\n' +
 '    .match-left { font-weight: 800; font-size: 16px; color: #ffeb3b; }\n' +
 '    .match-select { background: rgba(0,0,0,0.6); color: #fff; border: 1px solid ' + conf.neonColor + '; padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 14px; outline: none; }\n' +
+'    .match-select:disabled { opacity: 0.5; cursor: not-allowed; }\n' +
 '    \n' +
 '    .task-input { width: 100%; max-width: 320px; padding: 12px 16px; border-radius: 12px; border: 2px solid ' + conf.neonColor + '; background: rgba(0,0,0,0.6); color: #fff; font-size: 18px; text-align: center; font-weight: 800; outline: none; }\n' +
+'    .task-input:disabled { opacity: 0.5; cursor: not-allowed; }\n' +
 '    .submit-btn { background: ' + conf.btnColor + '; color: #000; border: none; padding: 12px 32px; border-radius: 20px; font-weight: 900; font-size: 16px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 15px ' + conf.btnColor + '; transition: 0.2s; }\n' +
 '    .submit-btn:hover { transform: scale(1.08); background: #fff; }\n' +
+'    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }\n' +
 '    \n' +
 '    .fail-msg { color: ' + conf.neonColor + '; font-weight: 800; font-size: 15px; text-align: center; margin-top: 4px; text-shadow: 0 0 8px ' + conf.neonColor + '; }\n' +
 '    .fail-ok-btn { background: ' + conf.btnColor + '; color: #000; border: none; padding: 6px 20px; border-radius: 15px; font-weight: 900; font-size: 13px; cursor: pointer; margin-top: 6px; text-transform: uppercase; box-shadow: 0 0 10px ' + conf.btnColor + '; outline: none; }\n' +
@@ -778,7 +805,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    .win-card-side { background: rgba(20, 2, 10, 0.85); border: 3px solid ' + conf.neonColor + '; border-radius: 22px; padding: 20px 15px; box-shadow: 0 0 35px ' + conf.neonColor + '; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; backdrop-filter: blur(8px); }\n' +
 '    .win-img-side { max-width: 140px; max-height: 140px; object-fit: contain; animation: floatWin 3s ease-in-out infinite; filter: drop-shadow(0 5px 15px ' + conf.neonColor + '); }\n' +
 '    @keyframes floatWin { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }\n' +
-'    .win-text-side { font-family: ' + conf.titleFont + '; color: ' + conf.winTextColor + '; font-size: clamp(14px, 2vw, 20px); font-weight: 900; text-shadow: 0 0 10px ' + conf.winTextColor + '; text-align: center; text-transform: uppercase; margin: 2px 0; line-height: 1.2; }\n' +
+'    .win-text-side { font-family: ' + conf.titleFont + '; color: ' + conf.winTextColor + '; font-size: clamp(12px, 1.8vw, 16px); font-weight: 800; text-shadow: 0 0 8px ' + conf.winTextColor + '; text-align: center; text-transform: uppercase; margin: 2px 0; line-height: 1.2; }\n' +
 '    .win-name-side { font-family: ' + conf.titleFont + '; color: ' + conf.winTextColor + '; font-size: clamp(18px, 2.5vw, 26px); font-weight: 900; text-shadow: 0 0 15px ' + conf.winTextColor + ', 0 0 30px ' + conf.neonColor + '; text-align: center; text-transform: uppercase; margin: 2px 0; line-height: 1.2; }\n' +
 '    .restart-btn-side { background: ' + conf.btnColor + '; color: #000; border: 3px solid #fff; border-radius: 30px; padding: 12px 28px; font-family: ' + conf.titleFont + '; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px ' + conf.btnColor + '; text-transform: uppercase; outline: none; }\n' +
 '    .restart-btn-side:hover { transform: scale(1.08); background: #fff; color: ' + conf.neonColor + '; }\n' +
@@ -811,7 +838,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '<script>\n' +
 '(function(){\n' +
 '    const ITEMS = ' + JSON.stringify(conf.items) + ';\n' +
-'    const TASKS = ' + JSON.stringify(conf.tasks) + ';\n' +
+'    let TASKS = ' + JSON.stringify(conf.tasks) + ';\n' +
 '    const GRID_SIZE = ' + conf.gridSize + ';\n' +
 '    const MODE = "' + conf.gameMode + '";\n' +
 '    const CONTENT_TYPE = "' + conf.contentType + '";\n' +
@@ -820,11 +847,11 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    const LANG = "' + conf.lang + '";\n' +
 '    const TEAM_1 = "' + conf.teamName1.replace(/"/g, '\\"') + '";\n' +
 '    const TEAM_2 = "' + conf.teamName2.replace(/"/g, '\\"') + '";\n' +
+'    const RANDOMIZE_TASKS = ' + (conf.randomizeTasks ? 'true' : 'false') + ';\n' +
 '    const sndDrawUrl = "' + conf.sndDraw + '";\n' +
 '    const sndPlaceUrl = "' + conf.sndPlace + '";\n' +
 '    const sndWinUrl = "' + conf.sndWin + '";\n' +
 '    const winImgUrl = "' + conf.winImg + '";\n' +
-'    const winTextConfig = "' + conf.winText.replace(/"/g, '\\"') + '";\n' +
 '    const drawBtnTextConfig = "' + conf.drawBtnText.replace(/"/g, '\\"') + '";\n' +
 '    let isMuted = false;\n' +
 '    const sfxDraw = sndDrawUrl ? new Audio(sndDrawUrl) : null;\n' +
@@ -842,24 +869,31 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '            }\n' +
 '        }, 50);\n' +
 '    }\n' +
+'    function shuffle(array) {\n' +
+'        let arr = [...array];\n' +
+'        for (let i = arr.length - 1; i > 0; i--) {\n' +
+'            const j = Math.floor(Math.random() * (i + 1));\n' +
+'            [arr[i], arr[j]] = [arr[j], arr[i]];\n' +
+'        }\n' +
+'        return arr;\n' +
+'    }\n' +
+'    if(RANDOMIZE_TASKS) {\n' +
+'        TASKS = shuffle(TASKS);\n' +
+'    }\n' +
 '    const DICT = {\n' +
-'        RU: { p1: TEAM_1 || "ИГРОК 1", p2: TEAM_2 || "ИГРОК 2", comp: "КОМПЬЮТЕР", myTurn: "ВАШ ХОД", compTurn: "ХОД КОМПЬЮТЕРА", pile: "СТОПКА ФИШЕК", pass: "ПЕРЕДАТЬ ХОД ➔", drawPrompt: "Жмите кнопку!", check: "ПРОВЕРИТЬ", reply: "ОТВЕТИТЬ", done: "ГОТОВО / ВЕРНО", win1: TEAM_1 ? "ПОБЕДИЛА КОМАНДА:| " + TEAM_1 : "ПОБЕДИЛ ИГРОК 1!", win2: TEAM_2 ? "ПОБЕДИЛА КОМАНДА:| " + TEAM_2 : "ПОБЕДИЛ ИГРОК 2!", winComp: "ПОБЕДИЛ КОМПЬЮТЕР!", winUser: "ВЫ ПОБЕДИЛИ!", restart: "ИГРАТЬ СНОВА", failAlert: "Неверно! Фишка не ставится, ход потерян!" },\n' +
-'        EN: { p1: TEAM_1 || "PLAYER 1", p2: TEAM_2 || "PLAYER 2", comp: "COMPUTER", myTurn: "YOUR TURN", compTurn: "COMPUTER TURN", pile: "TOKEN PILE", pass: "PASS TURN ➔", drawPrompt: "Click button!", check: "CHECK", reply: "SUBMIT", done: "DONE / CORRECT", win1: "PLAYER 1 WINS!", win2: "PLAYER 2 WINS!", winComp: "COMPUTER WINS!", winUser: "YOU WIN!", restart: "PLAY AGAIN", failAlert: "Incorrect! Token not placed, turn lost!" },\n' +
-'        ES: { p1: TEAM_1 || "JUGADOR 1", p2: TEAM_2 || "JUGADOR 2", comp: "COMPUTADORA", myTurn: "TU TURNO", compTurn: "TURNO PC", pile: "PILA DE FICHAS", pass: "PASAR TURNO ➔", drawPrompt: "¡Presiona!", check: "COMPROBAR", reply: "ENVIAR", done: "¡CORRECTO!", win1: "¡JUGADOR 1 GANA!", win2: "¡JUGADOR 2 GANA!", winComp: "¡COMPUTADORA GANA!", winUser: "¡GANASTE!", restart: "JUGAR DE NUEVO", failAlert: "¡Incorrecto! ¡Turno perdido!" },\n' +
-'        FR: { p1: TEAM_1 || "JOUEUR 1", p2: TEAM_2 || "JOUEUR 2", comp: "ORDINATEUR", myTurn: "VOTRE TOUR", compTurn: "TOUR PC", pile: "PILE DE JETONS", pass: "PASSER ➔", drawPrompt: "Appuyez !", check: "VÉRIFIER", reply: "SOUMETTRE", done: "CORRECT", win1: "JOUEUR 1 GAGNE !", win2: "JOUEUR 2 GAGNE !", winComp: "ORDINATEUR GAGNE !", winUser: "TU AS GAGNÉ !", restart: "REJOUER", failAlert: "Incorrect ! Tour perdu !" },\n' +
-'        DE: { p1: TEAM_1 || "SPIELER 1", p2: TEAM_2 || "SPIELER 2", comp: "COMPUTER", myTurn: "DEIN ZUG", compTurn: "PC ZUG", pile: "MARKEN-STAPEL", pass: "ZUG PASSEN ➔", drawPrompt: "Drücken!", check: "PRÜFEN", reply: "SENDEN", done: "RICHTIG", win1: "SPIELER 1 GEWINNT!", win2: "SPIELER 2 GEWINNT!", winComp: "COMPUTER GEWINNT!", winUser: "DU GEWINNST!", restart: "NOCHMAL", failAlert: "Falsch! Zug verloren!" },\n' +
-'        IT: { p1: TEAM_1 || "GIOCATORE 1", p2: TEAM_2 || "GIOCATORE 2", comp: "COMPUTER", myTurn: "TUO TURNO", compTurn: "TURNO PC", pile: "PILA GETTONI", pass: "PASSA TURNO ➔", drawPrompt: "Premi!", check: "VERIFICA", reply: "INVIA", done: "CORRETTO", win1: "VINCE GIOCATORE 1!", win2: "VINCE GIOCATORE 2!", winComp: "VINCE IL COMPUTER!", winUser: "HAI VINTO!", restart: "GIOCA ANCORA", failAlert: "Sbagliato! Turno perso!" },\n' +
-'        ZH: { p1: TEAM_1 || "玩家 1", p2: TEAM_2 || "玩家 2", comp: "电脑", myTurn: "你的回合", compTurn: "电脑回合", pile: "筹码堆", pass: "传递回合 ➔", drawPrompt: "点击抽卡！", check: "检查", reply: "提交", done: "正确", win1: "玩家 1 获胜！", win2: "玩家 2 获胜！", winComp: "电脑获胜！", winUser: "你赢了！", restart: "再玩一次", failAlert: "回答错误！筹码未放置，回合结束！" },\n' +
-'        JA: { p1: TEAM_1 || "プレイヤー 1", p2: TEAM_2 || "プレイヤー 2", comp: "コンピューター", myTurn: "あなたの番", compTurn: "PCの番", pile: "トークン置き場", pass: "ターンパス ➔", drawPrompt: "ボタンを押す！", check: "確認", reply: "送信", done: "正解", win1: "プレイヤー 1 の勝利！", win2: "プレイヤー 2 の勝利！", winComp: "コンピューターの勝利！", winUser: "あなたの勝ち！", restart: "もう一度プレイ", failAlert: "不正解！トークンは置けません！" },\n' +
-'        KO: { p1: TEAM_1 || "플레이어 1", p2: TEAM_2 || "플레이어 2", comp: "컴퓨터", myTurn: "내 차례", compTask: "컴퓨터 차례", pile: "토큰 더미", pass: "턴 넘기기 ➔", drawPrompt: "버튼 누르기!", check: "확인", reply: "제출", done: "정답", win1: "플레이어 1 승리!", win2: "플레이어 2 승리!", winComp: "컴퓨터 승리!", winUser: "승리했습니다!", restart: "다시하기", failAlert: "오답입니다! 턴이 넘어갑니다!" }\n' +
+'        RU: { p1: TEAM_1 || "ИГРОК 1", p2: TEAM_2 || "ИГРОК 2", comp: "КОМПЬЮТЕР", myTurn: "ВАШ ХОД", compTurn: "ХОД КОМПЬЮТЕРА", pile: "СТОПКА ФИШЕК", pass: "ПЕРЕДАТЬ ХОД ➔", drawPrompt: "Жмите кнопку!", check: "ПРОВЕРИТЬ", reply: "ОТВЕТИТЬ", done: "ГОТОВО / ВЕРНО", win1: TEAM_1 ? "ПОБЕДИЛА КОМАНДА:| " + TEAM_1 : "ПОБЕДИЛ:| ИГРОК 1!", win2: TEAM_2 ? "ПОБЕДИЛА КОМАНДА:| " + TEAM_2 : "ПОБЕДИЛ:| ИГРОК 2!", winComp: "ПОБЕДИЛ:| КОМПЬЮТЕР!", winUser: "ВЫ ПОБЕДИЛИ!", restart: "ИГРАТЬ СНОВА", failAlert: "Неверно! Фишка не ставится, ход потерян!" },\n' +
+'        EN: { p1: TEAM_1 || "PLAYER 1", p2: TEAM_2 || "PLAYER 2", comp: "COMPUTER", myTurn: "YOUR TURN", compTurn: "COMPUTER TURN", pile: "TOKEN PILE", pass: "PASS TURN ➔", drawPrompt: "Click button!", check: "CHECK", reply: "SUBMIT", done: "DONE / CORRECT", win1: TEAM_1 ? "TEAM WINS:| " + TEAM_1 : "WINNER:| PLAYER 1!", win2: TEAM_2 ? "TEAM WINS:| " + TEAM_2 : "WINNER:| PLAYER 2!", winComp: "WINNER:| COMPUTER!", winUser: "YOU WIN!", restart: "PLAY AGAIN", failAlert: "Incorrect! Token not placed, turn lost!" },\n' +
+'        ES: { p1: TEAM_1 || "JUGADOR 1", p2: TEAM_2 || "JUGADOR 2", comp: "COMPUTADORA", myTurn: "TU TURNO", compTurn: "TURNO PC", pile: "PILA DE FICHAS", pass: "PASAR TURNO ➔", drawPrompt: "¡Presiona!", check: "COMPROBAR", reply: "ENVIAR", done: "¡CORRECTO!", win1: TEAM_1 ? "EQUIPO GANA:| " + TEAM_1 : "GANADOR:| JUGADOR 1!", win2: TEAM_2 ? "EQUIPO GANA:| " + TEAM_2 : "GANADOR:| JUGADOR 2!", winComp: "GANADOR:| COMPUTADORA!", winUser: "¡GANASTE!", restart: "JUGAR DE NUEVO", failAlert: "¡Incorrecto! ¡Turno perdido!" },\n' +
+'        FR: { p1: TEAM_1 || "JOUEUR 1", p2: TEAM_2 || "JOUEUR 2", comp: "ORDINATEUR", myTurn: "VOTRE TOUR", compTurn: "TOUR PC", pile: "PILE DE JETONS", pass: "PASSER ➔", drawPrompt: "Appuyez !", check: "VÉRIFIER", reply: "SOUMETTRE", done: "CORRECT", win1: TEAM_1 ? "ÉQUIPE GAGNE:| " + TEAM_1 : "GAGNANT:| JOUEUR 1!", win2: TEAM_2 ? "ÉQUIPE GAGNE:| " + TEAM_2 : "GAGNANT:| JOUEUR 2!", winComp: "GAGNANT:| ORDINATEUR!", winUser: "TU AS GAGNÉ !", restart: "REJOUER", failAlert: "Incorrect ! Tour perdu !" },\n' +
+'        DE: { p1: TEAM_1 || "SPIELER 1", p2: TEAM_2 || "SPIELER 2", comp: "COMPUTER", myTurn: "DEIN ZUG", compTurn: "PC ZUG", pile: "MARKEN-STAPEL", pass: "ZUG PASSEN ➔", drawPrompt: "Drücken!", check: "PRÜFEN", reply: "SENDEN", done: "RICHTIG", win1: TEAM_1 ? "TEAM GEWINNT:| " + TEAM_1 : "GEWINNER:| SPIELER 1!", win2: TEAM_2 ? "TEAM GEWINNT:| " + TEAM_2 : "GEWINNER:| SPIELER 2!", winComp: "GEWINNER:| COMPUTER!", winUser: "DU GEWINNST!", restart: "NOCHMAL", failAlert: "Falsch! Zug verloren!" },\n' +
+'        IT: { p1: TEAM_1 || "GIOCATORE 1", p2: TEAM_2 || "GIOCATORE 2", comp: "COMPUTER", myTurn: "TUO TURNO", compTurn: "TURNO PC", pile: "PILA GETTONI", pass: "PASSA TURNO ➔", drawPrompt: "Premi!", check: "VERIFICA", reply: "INVIA", done: "CORRETTO", win1: TEAM_1 ? "SQUADRA VINCE:| " + TEAM_1 : "VINCITORE:| GIOCATORE 1!", win2: TEAM_2 ? "SQUADRA VINCE:| " + TEAM_2 : "VINCITORE:| GIOCATORE 2!", winComp: "VINCITORE:| COMPUTER!", winUser: "HAI VINTO!", restart: "GIOCA ANCORA", failAlert: "Sbagliato! Turno perso!" },\n' +
+'        ZH: { p1: TEAM_1 || "玩家 1", p2: TEAM_2 || "玩家 2", comp: "电脑", myTurn: "你的回合", compTurn: "电脑回合", pile: "筹码堆", pass: "传递回合 ➔", drawPrompt: "点击抽卡！", check: "检查", reply: "提交", done: "正确", win1: TEAM_1 ? "获胜队伍:| " + TEAM_1 : "获胜者:| 玩家 1!", win2: TEAM_2 ? "获胜队伍:| " + TEAM_2 : "获胜者:| 玩家 2!", winComp: "获胜者:| 电脑!", winUser: "你赢了！", restart: "再玩一次", failAlert: "回答错误！筹码未放置，回合结束！" },\n' +
+'        JA: { p1: TEAM_1 || "プレイヤー 1", p2: TEAM_2 || "プレイヤー 2", comp: "コンピューター", myTurn: "あなたの番", compTurn: "PCの番", pile: "トークン置き場", pass: "ターンパス ➔", drawPrompt: "ボタンを押す！", check: "確認", reply: "送信", done: "正解", win1: TEAM_1 ? "チーム勝利:| " + TEAM_1 : "勝者:| プレイヤー 1!", win2: TEAM_2 ? "チーム勝利:| " + TEAM_2 : "勝者:| プレイヤー 2!", winComp: "勝者:| コンピューター!", winUser: "あなたの勝ち！", restart: "もう一度プレイ", failAlert: "不正解！トークンは置けません！" },\n' +
+'        KO: { p1: TEAM_1 || "플레이어 1", p2: TEAM_2 || "플레이어 2", comp: "컴퓨터", myTurn: "내 차례", compTask: "컴퓨터 차례", pile: "토큰 더미", pass: "턴 넘기기 ➔", drawPrompt: "버튼 누르기!", check: "확인", reply: "제출", done: "정답", win1: TEAM_1 ? "팀 승리:| " + TEAM_1 : "승리:| 플레이어 1!", win2: TEAM_2 ? "팀 승리:| " + TEAM_2 : "승리:| 플레이어 2!", winComp: "승리:| 컴퓨터!", winUser: "승리했습니다!", restart: "다시하기", failAlert: "오답입니다! 턴이 넘어갑니다!" }\n' +
 '    };\n' +
 '    const L = DICT[LANG] || DICT["RU"];\n' +
 '    if(TEAM_1) L.p1 = TEAM_1;\n' +
 '    if(TEAM_2) L.p2 = TEAM_2;\n' +
-'    if(TEAM_1 && MODE === "2p") L.win1 = "ПОБЕДИЛА КОМАНДА:| " + TEAM_1 + "!";\n' +
-'    else if(TEAM_1) L.win1 = "ПОБЕДИЛ:| " + TEAM_1 + "!";\n' +
-'    if(TEAM_2 && MODE === "2p") L.win2 = "ПОБЕДИЛА КОМАНДА:| " + TEAM_2 + "!";\n' +
-'    else if(TEAM_2) L.win2 = "ПОБЕДИЛ:| " + TEAM_2 + "!";\n' +
 '    let currentDrawnItem = null;\n' +
 '    let drawnHistory = [];\n' +
 '    let currentPlayer = 1;\n' +
@@ -1055,8 +1089,8 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '        currentDrawnItem = pool[Math.floor(Math.random() * pool.length)];\n' +
 '        drawnHistory.push(currentDrawnItem);\n' +
 '        if(drawBox) {\n' +
-'            if(CONTENT_TYPE === "pictures" && currentDrawnItem.img) {\n' +
-'                drawBox.innerHTML = \'<img src="\' + currentDrawnItem.img + \'" class="draw-img"><div class="draw-text">\' + currentDrawnItem.text + \'</div>\';\n' +
+'            if(CONTENT_TYPE === "pictures") {\n' +
+'                drawBox.innerHTML = \'<img src="\' + currentDrawnItem.img + \'" class="draw-img">\';\n' +
 '            } else if(CONTENT_TYPE === "words") {\n' +
 '                drawBox.innerHTML = \'<div class="draw-text" style="font-size:20px;">\' + currentDrawnItem.text + \'</div>\';\n' +
 '            } else {\n' +
@@ -1211,6 +1245,7 @@ https://i.postimg.cc/brgjbTYm/9.png | банан</textarea>
 '    function handleTaskFail() {\n' +
 '        const existingMsg = modalCardContent.querySelector(".fail-msg");\n' +
 '        if(existingMsg) return;\n' +
+'        modalCardContent.querySelectorAll("button, input, select").forEach(el => el.disabled = true);\n' +
 '        const failMsg = document.createElement("div");\n' +
 '        failMsg.className = "fail-msg";\n' +
 '        failMsg.innerText = L.failAlert;\n' +
